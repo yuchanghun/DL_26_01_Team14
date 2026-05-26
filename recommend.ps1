@@ -11,6 +11,6 @@ Write-Host "Fit preference: slim / regular / over"
 $FIT    = Read-Host "Fit (default: regular)"
 if ($FIT -eq "") { $FIT = "regular" }
 Write-Host ""
-& "C:\Users\badah\anaconda3\envs\pytorich\python.exe" run_pipeline.py $IMG $HEIGHT $WEIGHT $FIT
+python run_pipeline.py $IMG $HEIGHT $WEIGHT $FIT
 Write-Host ""
 Read-Host "Press Enter to exit"
