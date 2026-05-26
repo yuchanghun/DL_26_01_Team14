@@ -46,8 +46,8 @@
 
 ### 환경 설정
 ```powershell
-conda create -n pytorich python=3.11
-conda activate pytorich
+conda create -n 환경이름 python=3.11
+conda activate 환경이름
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 pip install pandas pillow scikit-learn segmentation-models-pytorch jupyter
 ```
