@@ -1,8 +1,6 @@
 venv/
 __pycache__/
-*.pth
-*.pkl
 *.pyc
 .ipynb_checkpoints/
-data/model_*.pth
+data/model_a_checkpoint.pth
 .claude/
