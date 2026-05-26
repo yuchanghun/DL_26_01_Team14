@@ -53,7 +53,7 @@ pip install pandas pillow scikit-learn segmentation-models-pytorch jupyter
 ```
 
 ### 추천 실행
-1. `C:\딥러닝프로젝트\data\` 폴더에 이미지 넣기
+1. `data\` 폴더에 이미지 넣기
 2. `패션추천.bat` 더블클릭
 3. 파일명 / 키 / 몸무게 / 핏(slim·regular·over) 입력
 
