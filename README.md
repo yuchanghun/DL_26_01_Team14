@@ -49,7 +49,7 @@
 conda create -n kfashion python=3.11
 conda activate kfashion
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
-pip install pandas pillow scikit-learn segmentation-models-pytorch jupyter
+pip install pandas pillow scikit-learn ultralytics jupyter
 ```
 
 ### 추천 실행
@@ -66,7 +66,7 @@ python run_pipeline.py 내사진.jpg 168 60 regular
 
 ```
 ├── train.py                  # 모델 A 학습 스크립트
-├── train_seg.py              # 세그멘테이션 U-Net 학습 스크립트
+├── train_seg.py              # 세그멘테이션 YOLOv8-seg 학습 스크립트
 ├── kfashion_dataset.py       # K-Fashion 데이터 로더
 ├── run_pipeline.py           # 전체 파이프라인 실행
 ├── predict.py                # 이미지 단독 스타일 예측
