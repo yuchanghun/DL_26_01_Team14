@@ -17,15 +17,15 @@ SRC = {
     },
 }
 YOLO_DIR = Path(r'C:\딥러닝데이터\seg_yolo')
-SAVE_DIR = Path(__file__).parent / 'data'
+SAVE_DIR = Path(__file__).parent / 'model'
 
 EPOCHS     = 10
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 IMG_SIZE   = 256
 
-# 카테고리 폴더명 매핑 (라벨 TL_ → 이미지 TS_)
+# 카테고리 폴더명 매핑 (라벨 TL_/VL_ → 이미지 TS_/VS_)
 def label_to_img_cat(name):
-    return name.replace('TL_', 'TS_', 1)
+    return name.replace('TL_', 'TS_', 1).replace('VL_', 'VS_', 1)
 
 def make_junction(src, dst):
     if not dst.exists():
@@ -106,7 +106,7 @@ def prepare_dataset():
 if __name__ == '__main__':
     yaml_path = prepare_dataset()
 
-    model = YOLO('yolov8n-seg.pt')
+    model = YOLO(str(Path(__file__).parent / 'model' / 'yolov8n-seg.pt'))
     model.train(
         data=str(yaml_path),
         epochs=EPOCHS,

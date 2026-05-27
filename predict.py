@@ -23,7 +23,7 @@ class StyleCNN(nn.Module):
         return self.style_head(feat), self.category_head(feat)
 
 if __name__ == '__main__':
-    DATA_DIR = Path(__file__).parent / 'data'
+    MODEL_DIR = Path(__file__).parent / 'model'
     if len(sys.argv) < 2:
         print('사용법: python predict.py 이미지경로')
         sys.exit(1)
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = StyleCNN().to(device)
-    model.load_state_dict(torch.load(DATA_DIR / 'model_a_cnn.pth', map_location=device))
+    model.load_state_dict(torch.load(MODEL_DIR / 'model_a_cnn.pth', map_location=device))
     model.eval()
 
     transform = T.Compose([

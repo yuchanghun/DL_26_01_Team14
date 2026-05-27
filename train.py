@@ -13,10 +13,11 @@ sys.path.insert(0, str(Path(__file__).parent))
 from kfashion_dataset import KFashionDataset, STYLE_CLASSES, CATEGORY_CLASSES, IMG_SIZE
 
 # ── 설정 ──────────────────────────────────────────
-TRAIN_ROOT  = r'C:\딥러닝데이터\KFashion\Training'
-VAL_ROOT    = r'C:\딥러닝데이터\KFashion\Validation'
-SAVE_DIR    = Path(__file__).parent / 'data'
-LOG_FILE    = SAVE_DIR / 'train_log.txt'
+TRAIN_ROOT  = r'C:\딥러닝데이터\KFashion_balanced\Training'
+VAL_ROOT    = r'C:\딥러닝데이터\KFashion_balanced\Validation'
+SAVE_DIR    = Path(__file__).parent / 'model'
+LOG_FILE    = Path(__file__).parent / 'result' / 'train_log_balanced.txt'
+MODEL_NAME  = 'model_a_balanced'
 BATCH_SIZE  = 128
 EPOCHS      = 10
 LR          = 1e-4
@@ -96,7 +97,7 @@ if __name__ == '__main__':
         val_loader = None
 
     # 이전 체크포인트 확인
-    ckpt_path = SAVE_DIR / 'model_a_checkpoint.pth'
+    ckpt_path = SAVE_DIR / f'{MODEL_NAME}_checkpoint.pth'
     start_epoch = 1
     model = StyleCNN(pretrained=True).to(device)
     optimizer = optim.Adam(model.parameters(), lr=LR)
@@ -168,6 +169,6 @@ if __name__ == '__main__':
         }, ckpt_path)
 
         # 최종 모델도 저장
-        torch.save(model.state_dict(), SAVE_DIR / 'model_a_cnn.pth')
+        torch.save(model.state_dict(), SAVE_DIR / f'{MODEL_NAME}.pth')
 
     log('학습 완료!')

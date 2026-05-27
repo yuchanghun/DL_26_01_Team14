@@ -2,5 +2,17 @@ venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-data/model_a_checkpoint.pth
 .claude/
+
+# 모델 파일 (체크포인트 제외)
+model/*_checkpoint.pth
+data/*.pth
+data/*.pkl
+data/*.pt
+data/*.pdf
+data/seg_yolo/
+kfashoin_ai_model/
+
+# 임시 파일
+data/cropped_*.jpg
+data/guideline_full.txt

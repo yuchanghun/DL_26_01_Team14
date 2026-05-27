@@ -9,10 +9,12 @@ import torchvision.models as models
 import torchvision.transforms as T
 import pandas as pd
 from PIL import Image
+from ultralytics import YOLO
 
 from kfashion_dataset import STYLE_CLASSES, CATEGORY_CLASSES, IMG_SIZE
 
-DATA_DIR = Path(__file__).parent / 'data'
+DATA_DIR  = Path(__file__).parent / 'data'
+MODEL_DIR = Path(__file__).parent / 'model'
 
 SIZE_CLASSES = ['XS', 'S', 'M', 'L', 'XL']
 FIT_OFFSET   = {'slim': -1, 'regular': 0, 'over': 1}
@@ -37,17 +39,20 @@ class StyleCNN(nn.Module):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model_a = StyleCNN()
-model_a.load_state_dict(torch.load(DATA_DIR / 'model_a_cnn.pth', map_location=device, weights_only=True))
+model_a.load_state_dict(torch.load(MODEL_DIR / 'model_a_cnn.pth', map_location=device, weights_only=True))
 model_a.to(device).eval()
 
-with open(DATA_DIR / 'model_b_knn.pkl', 'rb') as f:
+with open(MODEL_DIR / 'model_b_knn.pkl', 'rb') as f:
     knn_data = pickle.load(f)
 knn     = knn_data['knn']
 scaler  = knn_data['scaler']
 
+model_person = YOLO(str(MODEL_DIR / 'yolov8n.pt'))
+
 print(f'디바이스: {device}')
 print('모델 A (ResNet18) 로드 완료')
 print('모델 B (KNN)      로드 완료')
+print('사람 감지 (YOLOv8n) 로드 완료')
 
 def predict_size(height_cm, weight_kg, fit='regular'):
     x      = scaler.transform([[height_cm, weight_kg]])
@@ -83,6 +88,14 @@ def recommend(height_cm, weight_kg, fit='regular', img_path=None, top_k=5):
     # Step 1. 모델 A — 스타일 분류
     if img_path:
         img = Image.open(img_path).convert('RGB')
+        results = model_person(img_path, verbose=False, classes=[0])
+        boxes = results[0].boxes
+        if boxes is not None and len(boxes):
+            x1, y1, x2, y2 = map(int, boxes.xyxy[0].tolist())
+            img = img.crop((x1, y1, x2, y2))
+            print('[사람 감지] 전신 크롭 완료')
+        else:
+            print('[사람 감지] 감지 실패, 원본 이미지 사용')
         image_tensor = EVAL_TRANSFORM(img).unsqueeze(0)
     else:
         image_tensor = torch.randn(1, 3, IMG_SIZE, IMG_SIZE)
