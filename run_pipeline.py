@@ -28,10 +28,10 @@ EVAL_TRANSFORM = T.Compose([
 class StyleCNN(nn.Module):
     def __init__(self):
         super().__init__()
-        backbone = models.resnet18(weights=None)
+        backbone = models.resnet50(weights=None)
         self.backbone = nn.Sequential(*list(backbone.children())[:-1])
-        self.style_head    = nn.Sequential(nn.Flatten(), nn.Dropout(0.4), nn.Linear(512, len(STYLE_CLASSES)))
-        self.category_head = nn.Sequential(nn.Flatten(), nn.Dropout(0.4), nn.Linear(512, len(CATEGORY_CLASSES)))
+        self.style_head    = nn.Sequential(nn.Flatten(), nn.Dropout(0.4), nn.Linear(2048, len(STYLE_CLASSES)))
+        self.category_head = nn.Sequential(nn.Flatten(), nn.Dropout(0.4), nn.Linear(2048, len(CATEGORY_CLASSES)))
     def forward(self, x):
         feat = self.backbone(x)
         return self.style_head(feat), self.category_head(feat)
@@ -39,7 +39,7 @@ class StyleCNN(nn.Module):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model_a = StyleCNN()
-model_a.load_state_dict(torch.load(MODEL_DIR / 'model_a_cnn.pth', map_location=device, weights_only=True))
+model_a.load_state_dict(torch.load(MODEL_DIR / 'model_a_v4.pth', map_location=device, weights_only=True))
 model_a.to(device).eval()
 
 with open(MODEL_DIR / 'model_b_knn.pkl', 'rb') as f:
@@ -50,7 +50,7 @@ scaler  = knn_data['scaler']
 model_person = YOLO(str(MODEL_DIR / 'yolov8n.pt'))
 
 print(f'디바이스: {device}')
-print('모델 A (ResNet18) 로드 완료')
+print('모델 A (ResNet50) 로드 완료')
 print('모델 B (KNN)      로드 완료')
 print('사람 감지 (YOLOv8n) 로드 완료')
 
@@ -72,14 +72,15 @@ def predict_size(height_cm, weight_kg, fit='regular'):
 
     return base, base
 
-def rank_candidates(candidate_ids, top_k=5):
+def rank_candidates(candidate_ids, rec_size, top_k=5):
     products = pd.read_csv('data/상품목록.csv', encoding='utf-8-sig')
     sales    = pd.read_csv('data/판매데이터.csv', encoding='utf-8-sig')
     df = products.merge(sales, on='product_id')
     def minmax(col): return (col - col.min()) / (col.max() - col.min() + 1e-8)
     df['trend_score'] = 0.6*minmax(df['sales_7d']) + 0.3*minmax(df['sales_30d']) + 0.1*minmax(df['view_count'])
     return (
-        df[df['product_id'].isin(candidate_ids)]
+        df[df['product_id'].isin(candidate_ids) & (df['size'] == rec_size)]
+        .drop_duplicates(subset='product_id')
         .sort_values('trend_score', ascending=False)
         .head(top_k)
     )
@@ -102,7 +103,7 @@ def recommend(height_cm, weight_kg, fit='regular', img_path=None, top_k=5):
 
     with torch.no_grad():
         out_s, out_c = model_a(image_tensor.to(device))
-        style_probs = torch.softmax(out_s, dim=1).squeeze().cpu().numpy()
+        style_probs = torch.sigmoid(out_s).squeeze().cpu().numpy()
         cat_probs   = torch.softmax(out_c, dim=1).squeeze().cpu().numpy()
 
     top_styles = [STYLE_CLASSES[i] for i in style_probs.argsort()[::-1][:2]]
@@ -131,7 +132,7 @@ def recommend(height_cm, weight_kg, fit='regular', img_path=None, top_k=5):
     print(f'\n[필터링] 스타일: {top_styles} / 사이즈: {rec_size} → 후보 {len(candidates)}개')
 
     # Step 4. 모델 C — 트렌드 정렬
-    ranked = rank_candidates(candidates, top_k)
+    ranked = rank_candidates(candidates, rec_size, top_k)
 
     print(f'\n{"="*60}')
     print(f'  최종 추천 TOP {top_k}  (트렌드 점수 높은 순)')
