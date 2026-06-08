@@ -1,0 +1,35 @@
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.claude/
+.gradio/
+
+# 모델 체크포인트 (용량 큰 것)
+model/*_checkpoint.pth
+model/model_a_v2.pth
+model/model_a_v3.pth
+model/model_a_balanced.pth
+model/model_a_balanced_checkpoint.pth
+model/model_a_checkpoint.pth
+model/model_a_cnn.pth
+
+# 학습 데이터
+data/samples_cache.pkl
+
+# 디버그 이미지
+data/debug_*.jpg
+data/cropped_*.jpg
+
+# 결과물
+result/
+
+# 임시
+data/guideline_full.txt
+data/seg_yolo/
+
+# 원본 엑셀
+data/*.xlsx
+
+# 학습/분석 스크립트 (앱 실행 불필요)
+03.AI모델/
